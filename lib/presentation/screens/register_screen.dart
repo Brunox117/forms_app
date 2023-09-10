@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:forms_app/presentation/blocs/register_cubit/register_cubit.dart';
 import 'package:forms_app/presentation/widgets/widgets.dart';
+import 'package:go_router/go_router.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -47,6 +48,7 @@ class _RegisterForm extends StatelessWidget {
     final registerCubit = context.watch<RegisterCubit>();
     final username = registerCubit.state.username;
     final password = registerCubit.state.password;
+    final email = registerCubit.state.email;
     return Form(
         child: Column(
       children: [
@@ -55,12 +57,6 @@ class _RegisterForm extends StatelessWidget {
           onChanged: registerCubit.usernameChanged,
           errorMessage: username.errorMessage,
           prefixIcon: const Icon(Icons.person_2_outlined),
-          validator: (value) {
-            if (value == null || value.isEmpty) return 'Campo requerido';
-            if (value.trim().isEmpty) return 'Campo requerido';
-            if (value.trim().length < 6) return 'El usuario debe tener más de 5 letras';
-            return null;
-          },
         ),
         const SizedBox(
           height: 15,
@@ -68,18 +64,8 @@ class _RegisterForm extends StatelessWidget {
         CustomTextFormField(
           label: 'Correo electrónico',
           prefixIcon: const Icon(Icons.email_outlined),
-          onChanged: (value) {
-            registerCubit.emailChanged(value);
-          },
-          validator: (value) {
-            if (value == null || value.isEmpty) return 'Campo requerido';
-            if (value.trim().isEmpty) return 'Campo requerido';
-            final emailRegExp = RegExp(
-              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-            );
-            if (!emailRegExp.hasMatch(value)) return 'Correo inválido';
-            return null;
-          },
+          onChanged: registerCubit.emailChanged,
+          errorMessage: email.errorMessage,
         ),
         const SizedBox(
           height: 15,
@@ -90,13 +76,8 @@ class _RegisterForm extends StatelessWidget {
           onChanged: (value) {
             registerCubit.passwordChanged(value);
           },
+          errorMessage: password.errorMessage,
           obscureText: true,
-          validator: (value) {
-            if (value == null || value.isEmpty) return 'Campo requerido';
-            if (value.trim().isEmpty) return 'Campo requerido';
-            if (value.trim().length < 6) return 'La contraseña debe tener más de 5 letras';
-            return null;
-          },
         ),
         const SizedBox(
           height: 40,
@@ -104,6 +85,7 @@ class _RegisterForm extends StatelessWidget {
         FilledButton.tonalIcon(
             onPressed: () {
               registerCubit.onSubmit();
+              if(registerCubit.state.isValid) context.pop();
             },
             icon: const Icon(Icons.save),
             label: const Text('Crear usuario')),
